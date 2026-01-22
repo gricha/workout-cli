@@ -203,6 +203,17 @@ export function createStatusCommand(): Command {
         const setsStr = log.sets.map((s) => `${s.weight}${unit}x${s.reps}`).join(', ');
         console.log(`  ${name}: ${setsStr}`);
       }
+      if (log.notes) {
+        console.log(`    Note: ${log.notes}`);
+      }
+    }
+
+    if (workout.notes.length > 0) {
+      console.log('');
+      console.log('Session Notes:');
+      for (const note of workout.notes) {
+        console.log(`  - ${note}`);
+      }
     }
   });
 }
@@ -249,4 +260,39 @@ export function createCancelCommand(): Command {
     storage.clearCurrentWorkout();
     console.log(`Cancelled workout: ${workout.id}`);
   });
+}
+
+export function createNoteCommand(): Command {
+  return new Command('note')
+    .description('Add a note to the current workout')
+    .argument('<text...>', 'Note text (or exercise ID followed by note text)')
+    .action((textParts: string[]) => {
+      const storage = getStorage();
+      const workout = storage.getCurrentWorkout();
+
+      if (!workout) {
+        console.error('No active workout. Start one with "workout start".');
+        process.exit(1);
+      }
+
+      const firstArg = textParts[0]!;
+      const exercise = storage.getExercise(firstArg);
+
+      if (exercise && textParts.length > 1) {
+        const noteText = textParts.slice(1).join(' ');
+        let exerciseLog = workout.exercises.find((e) => e.exercise === exercise.id);
+        if (!exerciseLog) {
+          exerciseLog = { exercise: exercise.id, sets: [] };
+          workout.exercises.push(exerciseLog);
+        }
+        exerciseLog.notes = exerciseLog.notes ? `${exerciseLog.notes}; ${noteText}` : noteText;
+        storage.saveCurrentWorkout(workout);
+        console.log(`Added note to ${exercise.name}: ${noteText}`);
+      } else {
+        const noteText = textParts.join(' ');
+        workout.notes.push(noteText);
+        storage.saveCurrentWorkout(workout);
+        console.log(`Added session note: ${noteText}`);
+      }
+    });
 }

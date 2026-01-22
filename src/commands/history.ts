@@ -71,6 +71,13 @@ export function createLastCommand(): Command {
             );
           }
         }
+        if (workout.notes.length > 0) {
+          console.log('');
+          console.log('Notes:');
+          for (const note of workout.notes) {
+            console.log(`  - ${note}`);
+          }
+        }
       }
     });
 }
