@@ -1,0 +1,50 @@
+{
+  "name": "workout-cli",
+  "version": "0.1.0",
+  "description": "Workout CLI",
+  "type": "module",
+  "bin": {
+    "workout": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "rm -rf ./dist && bun run build:ts && bun link",
+    "build:ts": "tsc && chmod +x dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "oxlint --type-aware --tsconfig=tsconfig.json src/",
+    "format": "oxfmt src/ test/",
+    "format:check": "oxfmt --check src/ test/",
+    "check": "bun run lint && bun run format:check && bun x tsc --noEmit",
+    "validate": "bun run check && bun run test && bun run build:ts",
+    "prepare": "husky"
+  },
+  "engines": {
+    "bun": ">=1.3.5"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "zod": "^4.3.4"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.5",
+    "@types/node": "^22.8.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "oxfmt": "^0.21.0",
+    "oxlint": "^1.36.0",
+    "oxlint-tsgolint": "^0.11.1",
+    "typescript": "^5.6.3",
+    "vitest": "^4.0.18"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "oxlint --type-aware --tsconfig=tsconfig.json",
+      "oxfmt"
+    ]
+  },
+  "license": "MIT"
+}

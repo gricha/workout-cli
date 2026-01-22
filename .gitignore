@@ -1,0 +1,20 @@
+node_modules
+dist
+
+# Lock files (only bun.lock is used)
+yarn.lock
+package-lock.json
+
+# Editor
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
