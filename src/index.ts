@@ -10,13 +10,18 @@ import {
   createCancelCommand,
 } from './commands/session.js';
 import { createLastCommand, createHistoryCommand } from './commands/history.js';
+import {
+  createPRCommand,
+  createVolumeCommand,
+  createProgressionCommand,
+} from './commands/analytics.js';
 
 const program = new Command();
 
 program
   .name('workout')
   .description('CLI for tracking workouts, managing exercises, and querying training history')
-  .version('0.1.0');
+  .version('0.2.0');
 
 program.addCommand(createExercisesCommand());
 program.addCommand(createTemplatesCommand());
@@ -27,5 +32,8 @@ program.addCommand(createDoneCommand());
 program.addCommand(createCancelCommand());
 program.addCommand(createLastCommand());
 program.addCommand(createHistoryCommand());
+program.addCommand(createPRCommand());
+program.addCommand(createVolumeCommand());
+program.addCommand(createProgressionCommand());
 
 program.parse();
