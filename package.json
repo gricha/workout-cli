@@ -11,8 +11,9 @@
   ],
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "build": "rm -rf ./dist && bun run build:ts && bun link",
+    "build": "rm -rf ./dist && bun run build:ts && bun run build:bin && bun link",
     "build:ts": "tsc && chmod +x dist/index.js",
+    "build:bin": "bun build src/index.ts --compile --outfile dist/workout --target=bun",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "oxlint --type-aware --tsconfig=tsconfig.json src/",
