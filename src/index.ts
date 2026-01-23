@@ -9,6 +9,8 @@ import {
   createDoneCommand,
   createCancelCommand,
   createNoteCommand,
+  createSwapCommand,
+  createAddCommand,
 } from './commands/session.js';
 import { createLastCommand, createHistoryCommand } from './commands/history.js';
 import {
@@ -32,6 +34,8 @@ program.addCommand(createStatusCommand());
 program.addCommand(createDoneCommand());
 program.addCommand(createCancelCommand());
 program.addCommand(createNoteCommand());
+program.addCommand(createSwapCommand());
+program.addCommand(createAddCommand());
 program.addCommand(createLastCommand());
 program.addCommand(createHistoryCommand());
 program.addCommand(createPRCommand());

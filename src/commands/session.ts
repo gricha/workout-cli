@@ -296,3 +296,84 @@ export function createNoteCommand(): Command {
       }
     });
 }
+
+export function createSwapCommand(): Command {
+  return new Command('swap')
+    .description('Swap an exercise in the current workout with another')
+    .argument('<old-exercise>', 'Exercise ID to replace')
+    .argument('<new-exercise>', 'Exercise ID to swap in')
+    .action((oldExerciseId: string, newExerciseId: string) => {
+      const storage = getStorage();
+      const workout = storage.getCurrentWorkout();
+
+      if (!workout) {
+        console.error('No active workout. Start one with "workout start".');
+        process.exit(1);
+      }
+
+      const oldExercise = storage.getExercise(oldExerciseId);
+      if (!oldExercise) {
+        console.error(`Exercise "${oldExerciseId}" not found.`);
+        process.exit(1);
+      }
+
+      const newExercise = storage.getExercise(newExerciseId);
+      if (!newExercise) {
+        console.error(`Exercise "${newExerciseId}" not found.`);
+        process.exit(1);
+      }
+
+      const exerciseLogIndex = workout.exercises.findIndex((e) => e.exercise === oldExercise.id);
+      if (exerciseLogIndex === -1) {
+        console.error(`Exercise "${oldExercise.name}" is not in the current workout.`);
+        process.exit(1);
+      }
+
+      const existingNewLog = workout.exercises.find((e) => e.exercise === newExercise.id);
+      if (existingNewLog) {
+        console.error(`Exercise "${newExercise.name}" is already in the current workout.`);
+        process.exit(1);
+      }
+
+      const exerciseLog = workout.exercises[exerciseLogIndex]!;
+      const setsCount = exerciseLog.sets.length;
+      exerciseLog.exercise = newExercise.id;
+
+      storage.saveCurrentWorkout(workout);
+      console.log(`Swapped ${oldExercise.name} → ${newExercise.name}`);
+      if (setsCount > 0) {
+        console.log(`Moved ${setsCount} set${setsCount > 1 ? 's' : ''} to ${newExercise.name}`);
+      }
+    });
+}
+
+export function createAddCommand(): Command {
+  return new Command('add')
+    .description('Add an exercise to the current workout')
+    .argument('<exercise>', 'Exercise ID to add')
+    .action((exerciseId: string) => {
+      const storage = getStorage();
+      const workout = storage.getCurrentWorkout();
+
+      if (!workout) {
+        console.error('No active workout. Start one with "workout start".');
+        process.exit(1);
+      }
+
+      const exercise = storage.getExercise(exerciseId);
+      if (!exercise) {
+        console.error(`Exercise "${exerciseId}" not found.`);
+        process.exit(1);
+      }
+
+      const existingLog = workout.exercises.find((e) => e.exercise === exercise.id);
+      if (existingLog) {
+        console.error(`Exercise "${exercise.name}" is already in the current workout.`);
+        process.exit(1);
+      }
+
+      workout.exercises.push({ exercise: exercise.id, sets: [] });
+      storage.saveCurrentWorkout(workout);
+      console.log(`Added ${exercise.name} to workout`);
+    });
+}
