@@ -36,14 +36,14 @@ function calculateStats(workout: Workout, storage: ReturnType<typeof getStorage>
   };
 }
 
-export function createStartCommand(): Command {
+export function createStartCommand(getProfile: () => string | undefined): Command {
   return new Command('start')
     .description('Start a new workout session')
     .argument('[template]', 'Template ID to use')
     .option('--empty', 'Start an empty freestyle session')
     .option('--continue', 'Resume an interrupted session')
     .action((templateId: string | undefined, options: { empty?: boolean; continue?: boolean }) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
 
       if (options.continue) {
         const current = storage.getCurrentWorkout();
@@ -101,7 +101,7 @@ export function createStartCommand(): Command {
     });
 }
 
-export function createLogCommand(): Command {
+export function createLogCommand(getProfile: () => string | undefined): Command {
   return new Command('log')
     .description('Log a set')
     .argument('<exercise>', 'Exercise ID')
@@ -109,7 +109,7 @@ export function createLogCommand(): Command {
     .argument('<reps>', 'Reps (single number or comma-separated for multiple sets)')
     .option('--rir <rir>', 'Reps in reserve (0-10)')
     .action((exerciseId: string, weightStr: string, repsStr: string, options: { rir?: string }) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
       const workout = storage.getCurrentWorkout();
 
       if (!workout) {
@@ -168,9 +168,9 @@ export function createLogCommand(): Command {
     });
 }
 
-export function createStatusCommand(): Command {
+export function createStatusCommand(getProfile: () => string | undefined): Command {
   return new Command('status').description('Show current workout status').action(() => {
-    const storage = getStorage();
+    const storage = getStorage(getProfile());
     const workout = storage.getCurrentWorkout();
 
     if (!workout) {
@@ -218,9 +218,9 @@ export function createStatusCommand(): Command {
   });
 }
 
-export function createDoneCommand(): Command {
+export function createDoneCommand(getProfile: () => string | undefined): Command {
   return new Command('done').description('Finish current workout').action(() => {
-    const storage = getStorage();
+    const storage = getStorage(getProfile());
     const workout = storage.getCurrentWorkout();
 
     if (!workout) {
@@ -247,9 +247,9 @@ export function createDoneCommand(): Command {
   });
 }
 
-export function createCancelCommand(): Command {
+export function createCancelCommand(getProfile: () => string | undefined): Command {
   return new Command('cancel').description('Cancel current workout without saving').action(() => {
-    const storage = getStorage();
+    const storage = getStorage(getProfile());
     const workout = storage.getCurrentWorkout();
 
     if (!workout) {
@@ -262,12 +262,12 @@ export function createCancelCommand(): Command {
   });
 }
 
-export function createNoteCommand(): Command {
+export function createNoteCommand(getProfile: () => string | undefined): Command {
   return new Command('note')
     .description('Add a note to the current workout')
     .argument('<text...>', 'Note text (or exercise ID followed by note text)')
     .action((textParts: string[]) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
       const workout = storage.getCurrentWorkout();
 
       if (!workout) {
@@ -297,13 +297,13 @@ export function createNoteCommand(): Command {
     });
 }
 
-export function createSwapCommand(): Command {
+export function createSwapCommand(getProfile: () => string | undefined): Command {
   return new Command('swap')
     .description('Swap an exercise in the current workout with another')
     .argument('<old-exercise>', 'Exercise ID to replace')
     .argument('<new-exercise>', 'Exercise ID to swap in')
     .action((oldExerciseId: string, newExerciseId: string) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
       const workout = storage.getCurrentWorkout();
 
       if (!workout) {
@@ -347,12 +347,12 @@ export function createSwapCommand(): Command {
     });
 }
 
-export function createAddCommand(): Command {
+export function createAddCommand(getProfile: () => string | undefined): Command {
   return new Command('add')
     .description('Add an exercise to the current workout')
     .argument('<exercise>', 'Exercise ID to add')
     .action((exerciseId: string) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
       const workout = storage.getCurrentWorkout();
 
       if (!workout) {

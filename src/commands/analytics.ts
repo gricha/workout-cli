@@ -47,14 +47,14 @@ function findPRs(storage: ReturnType<typeof getStorage>): Map<string, PR> {
   return prs;
 }
 
-export function createPRCommand(): Command {
+export function createPRCommand(getProfile: () => string | undefined): Command {
   return new Command('pr')
     .description('Show personal records')
     .argument('[exercise]', 'Exercise ID (optional, shows all if omitted)')
     .option('-m, --muscle <muscle>', 'Filter by muscle group')
     .option('--json', 'Output as JSON')
     .action((exerciseId: string | undefined, options: { muscle?: string; json?: boolean }) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
       const config = storage.getConfig();
       const unit = config.units;
       const prs = findPRs(storage);
@@ -123,7 +123,7 @@ function formatDateRange(start: Date, end: Date): string {
   return `${startStr} to ${endStr}`;
 }
 
-export function createVolumeCommand(): Command {
+export function createVolumeCommand(getProfile: () => string | undefined): Command {
   return new Command('volume')
     .description('Analyze training volume')
     .option('-w, --week', 'Show current week')
@@ -139,7 +139,7 @@ export function createVolumeCommand(): Command {
         by?: string;
         json?: boolean;
       }) => {
-        const storage = getStorage();
+        const storage = getStorage(getProfile());
         const config = storage.getConfig();
         const unit = config.units;
         const workouts = storage.getAllWorkouts();
@@ -268,14 +268,14 @@ export function createVolumeCommand(): Command {
     );
 }
 
-export function createProgressionCommand(): Command {
+export function createProgressionCommand(getProfile: () => string | undefined): Command {
   return new Command('progression')
     .description('Show progression over time for an exercise')
     .argument('<exercise>', 'Exercise ID')
     .option('-n, --last <count>', 'Show last N sessions', '10')
     .option('--json', 'Output as JSON')
     .action((exerciseId: string, options: { last: string; json?: boolean }) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
       const config = storage.getConfig();
       const unit = config.units;
       const exercise = storage.getExercise(exerciseId);

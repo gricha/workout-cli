@@ -1,13 +1,13 @@
 import { Command } from 'commander';
 import { getStorage } from '../data/storage.js';
 
-export function createLastCommand(): Command {
+export function createLastCommand(getProfile: () => string | undefined): Command {
   return new Command('last')
     .description('Show last workout')
     .option('--full', 'Show full details')
     .option('--json', 'Output as JSON')
     .action((options: { full?: boolean; json?: boolean }) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
       const workout = storage.getLastWorkout();
 
       if (!workout) {
@@ -82,14 +82,14 @@ export function createLastCommand(): Command {
     });
 }
 
-export function createHistoryCommand(): Command {
+export function createHistoryCommand(getProfile: () => string | undefined): Command {
   return new Command('history')
     .description('Show exercise history')
     .argument('<exercise>', 'Exercise ID')
     .option('-n, --last <count>', 'Show last N sessions', '10')
     .option('--json', 'Output as JSON')
     .action((exerciseId: string, options: { last: string; json?: boolean }) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
       const exercise = storage.getExercise(exerciseId);
 
       if (!exercise) {

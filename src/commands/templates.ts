@@ -18,7 +18,7 @@ function parseExerciseSpec(spec: string): TemplateExercise {
   };
 }
 
-export function createTemplatesCommand(): Command {
+export function createTemplatesCommand(getProfile: () => string | undefined): Command {
   const templates = new Command('templates').description('Manage workout templates');
 
   templates
@@ -26,7 +26,7 @@ export function createTemplatesCommand(): Command {
     .description('List all templates')
     .option('--json', 'Output as JSON')
     .action((options: { json?: boolean }) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
       const templateList = storage.getTemplates();
 
       if (options.json) {
@@ -50,7 +50,7 @@ export function createTemplatesCommand(): Command {
     .description('Show template details')
     .option('--json', 'Output as JSON')
     .action((id: string, options: { json?: boolean }) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
       const template = storage.getTemplate(id);
 
       if (!template) {
@@ -92,7 +92,7 @@ export function createTemplatesCommand(): Command {
           description?: string;
         }
       ) => {
-        const storage = getStorage();
+        const storage = getStorage(getProfile());
         const id = options.id ?? slugify(name);
 
         const exerciseSpecs = options.exercises.split(',').map((s) => s.trim());
@@ -128,7 +128,7 @@ export function createTemplatesCommand(): Command {
     .command('delete <id>')
     .description('Delete a template')
     .action((id: string) => {
-      const storage = getStorage();
+      const storage = getStorage(getProfile());
 
       try {
         storage.deleteTemplate(id);

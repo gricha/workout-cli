@@ -34,6 +34,52 @@ workout log overhead-press 95 10,9,8
 workout done
 ```
 
+## Multi-User Profiles
+
+Multiple people can track workouts independently on the same machine using profiles.
+
+### How it Works
+
+- **Single profile**: Commands work automatically (backwards compatible)
+- **Multiple profiles**: Use `--profile <name>` to specify which profile
+- **Shared exercises**: The exercise library is shared across all profiles
+- **Per-user data**: Templates, workouts, config, and current session are per-profile
+
+### Profile Commands
+
+```bash
+# List all profiles
+workout profile list
+
+# Create a new profile
+workout profile create sarah
+
+# Delete a profile (cannot delete the last one)
+workout profile delete old-profile
+```
+
+### Using Profiles
+
+```bash
+# When multiple profiles exist, specify which one to use
+workout --profile mike start push-day
+workout --profile mike log bench-press 185 8,8,7,6
+workout --profile mike done
+
+# Sarah can workout simultaneously
+workout --profile sarah start leg-day
+workout --profile sarah log squat 135 8,8,8
+workout --profile sarah done
+
+# Check each person's status
+workout --profile mike status
+workout --profile sarah status
+```
+
+### Migration
+
+If you have existing data, it will automatically migrate to a `default` profile on first use. The exercise library stays shared at the root level.
+
 ## Commands
 
 ### Workout Sessions
@@ -377,11 +423,18 @@ All data is stored locally in `~/.workout/`:
 
 ```
 ~/.workout/
-  config.json      # User preferences
-  exercises.json   # Custom exercises
-  templates.json   # Workout templates  
-  history/         # Completed workouts
-  current.json     # Active workout (if any)
+├── exercises.json        # Shared exercise library
+├── profiles/
+│   ├── default/          # Default profile (or your profile name)
+│   │   ├── config.json   # User preferences (units, etc.)
+│   │   ├── templates.json
+│   │   ├── current.json  # Active workout (if any)
+│   │   └── workouts/     # Completed workouts
+│   └── sarah/            # Another profile
+│       ├── config.json
+│       ├── templates.json
+│       ├── current.json
+│       └── workouts/
 ```
 
 ## JSON Output

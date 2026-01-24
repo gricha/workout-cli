@@ -2,20 +2,26 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { Storage, resetStorage } from '../src/data/storage.js';
+import { Storage, resetStorage, getStorage } from '../src/data/storage.js';
+import { createProfile } from '../src/data/profiles.js';
+
+const originalHome = process.env.HOME;
 
 describe('workout session flow', () => {
-  let testDir: string;
+  let testHome: string;
   let storage: Storage;
 
   beforeEach(() => {
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workout-test-'));
+    testHome = fs.mkdtempSync(path.join(os.tmpdir(), 'workout-test-'));
+    process.env.HOME = testHome;
     resetStorage();
-    storage = new Storage(testDir);
+    createProfile('test');
+    storage = getStorage('test');
   });
 
   afterEach(() => {
-    fs.rmSync(testDir, { recursive: true, force: true });
+    process.env.HOME = originalHome;
+    fs.rmSync(testHome, { recursive: true, force: true });
   });
 
   it('complete workout flow: start -> log -> done', () => {
@@ -187,17 +193,20 @@ describe('workout session flow', () => {
 });
 
 describe('exercise management', () => {
-  let testDir: string;
+  let testHome: string;
   let storage: Storage;
 
   beforeEach(() => {
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workout-test-'));
+    testHome = fs.mkdtempSync(path.join(os.tmpdir(), 'workout-test-'));
+    process.env.HOME = testHome;
     resetStorage();
-    storage = new Storage(testDir);
+    createProfile('test');
+    storage = getStorage('test');
   });
 
   afterEach(() => {
-    fs.rmSync(testDir, { recursive: true, force: true });
+    process.env.HOME = originalHome;
+    fs.rmSync(testHome, { recursive: true, force: true });
   });
 
   it('filters exercises by muscle group', () => {
@@ -275,17 +284,20 @@ describe('exercise management', () => {
 });
 
 describe('template management', () => {
-  let testDir: string;
+  let testHome: string;
   let storage: Storage;
 
   beforeEach(() => {
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workout-test-'));
+    testHome = fs.mkdtempSync(path.join(os.tmpdir(), 'workout-test-'));
+    process.env.HOME = testHome;
     resetStorage();
-    storage = new Storage(testDir);
+    createProfile('test');
+    storage = getStorage('test');
   });
 
   afterEach(() => {
-    fs.rmSync(testDir, { recursive: true, force: true });
+    process.env.HOME = originalHome;
+    fs.rmSync(testHome, { recursive: true, force: true });
   });
 
   it('creates template with exercise specs', () => {
@@ -327,17 +339,20 @@ describe('template management', () => {
 });
 
 describe('config management', () => {
-  let testDir: string;
+  let testHome: string;
   let storage: Storage;
 
   beforeEach(() => {
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'workout-test-'));
+    testHome = fs.mkdtempSync(path.join(os.tmpdir(), 'workout-test-'));
+    process.env.HOME = testHome;
     resetStorage();
-    storage = new Storage(testDir);
+    createProfile('test');
+    storage = getStorage('test');
   });
 
   afterEach(() => {
-    fs.rmSync(testDir, { recursive: true, force: true });
+    process.env.HOME = originalHome;
+    fs.rmSync(testHome, { recursive: true, force: true });
   });
 
   it('defaults to pounds', () => {
@@ -346,16 +361,16 @@ describe('config management', () => {
   });
 
   it('switches to kilograms', () => {
-    storage.saveConfig({ units: 'kg', dataDir: testDir });
+    storage.saveConfig({ units: 'kg', dataDir: '~/.workout' });
     const config = storage.getConfig();
     expect(config.units).toBe('kg');
   });
 
   it('persists config across storage instances', () => {
-    storage.saveConfig({ units: 'kg', dataDir: testDir });
+    storage.saveConfig({ units: 'kg', dataDir: '~/.workout' });
 
     resetStorage();
-    const newStorage = new Storage(testDir);
+    const newStorage = getStorage('test');
     expect(newStorage.getConfig().units).toBe('kg');
   });
 });
