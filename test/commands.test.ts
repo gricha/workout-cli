@@ -190,6 +190,184 @@ describe('workout session flow', () => {
     expect(sets).toHaveLength(3);
     expect(sets.map((s) => s.reps)).toEqual([12, 10, 8]);
   });
+
+  it('undo removes last set from specified exercise', () => {
+    const now = new Date();
+    const date = now.toISOString().split('T')[0]!;
+
+    storage.saveCurrentWorkout({
+      id: `${date}-test`,
+      date,
+      template: null,
+      startTime: now.toISOString(),
+      endTime: null,
+      exercises: [
+        {
+          exercise: 'bench-press',
+          sets: [
+            { weight: 135, reps: 10, rir: null },
+            { weight: 135, reps: 9, rir: null },
+            { weight: 135, reps: 8, rir: null },
+          ],
+        },
+      ],
+      notes: [],
+    });
+
+    const current = storage.getCurrentWorkout()!;
+    const benchLog = current.exercises.find((e) => e.exercise === 'bench-press')!;
+    benchLog.sets.pop();
+    storage.saveCurrentWorkout(current);
+
+    const updated = storage.getCurrentWorkout()!;
+    const sets = updated.exercises.find((e) => e.exercise === 'bench-press')!.sets;
+    expect(sets).toHaveLength(2);
+    expect(sets.map((s) => s.reps)).toEqual([10, 9]);
+  });
+
+  it('undo finds last exercise with sets when no exercise specified', () => {
+    const now = new Date();
+    const date = now.toISOString().split('T')[0]!;
+
+    storage.saveCurrentWorkout({
+      id: `${date}-test`,
+      date,
+      template: null,
+      startTime: now.toISOString(),
+      endTime: null,
+      exercises: [
+        {
+          exercise: 'bench-press',
+          sets: [{ weight: 135, reps: 10, rir: null }],
+        },
+        {
+          exercise: 'overhead-press',
+          sets: [],
+        },
+        {
+          exercise: 'squat',
+          sets: [
+            { weight: 185, reps: 5, rir: null },
+            { weight: 185, reps: 5, rir: null },
+          ],
+        },
+      ],
+      notes: [],
+    });
+
+    const current = storage.getCurrentWorkout()!;
+    for (let i = current.exercises.length - 1; i >= 0; i--) {
+      const log = current.exercises[i]!;
+      if (log.sets.length > 0) {
+        log.sets.pop();
+        break;
+      }
+    }
+    storage.saveCurrentWorkout(current);
+
+    const updated = storage.getCurrentWorkout()!;
+    const squatSets = updated.exercises.find((e) => e.exercise === 'squat')!.sets;
+    expect(squatSets).toHaveLength(1);
+  });
+
+  it('edit updates weight and reps for a specific set', () => {
+    const now = new Date();
+    const date = now.toISOString().split('T')[0]!;
+
+    storage.saveCurrentWorkout({
+      id: `${date}-test`,
+      date,
+      template: null,
+      startTime: now.toISOString(),
+      endTime: null,
+      exercises: [
+        {
+          exercise: 'bench-press',
+          sets: [
+            { weight: 135, reps: 10, rir: null },
+            { weight: 135, reps: 9, rir: null },
+          ],
+        },
+      ],
+      notes: [],
+    });
+
+    const current = storage.getCurrentWorkout()!;
+    const benchLog = current.exercises.find((e) => e.exercise === 'bench-press')!;
+    benchLog.sets[0]!.weight = 185;
+    benchLog.sets[0]!.reps = 12;
+    storage.saveCurrentWorkout(current);
+
+    const updated = storage.getCurrentWorkout()!;
+    const set1 = updated.exercises.find((e) => e.exercise === 'bench-press')!.sets[0]!;
+    expect(set1.weight).toBe(185);
+    expect(set1.reps).toBe(12);
+  });
+
+  it('edit can update only weight or only reps', () => {
+    const now = new Date();
+    const date = now.toISOString().split('T')[0]!;
+
+    storage.saveCurrentWorkout({
+      id: `${date}-test`,
+      date,
+      template: null,
+      startTime: now.toISOString(),
+      endTime: null,
+      exercises: [
+        {
+          exercise: 'squat',
+          sets: [{ weight: 185, reps: 5, rir: null }],
+        },
+      ],
+      notes: [],
+    });
+
+    const current = storage.getCurrentWorkout()!;
+    const squatLog = current.exercises.find((e) => e.exercise === 'squat')!;
+    squatLog.sets[0]!.weight = 225;
+    storage.saveCurrentWorkout(current);
+
+    const updated = storage.getCurrentWorkout()!;
+    const set = updated.exercises.find((e) => e.exercise === 'squat')!.sets[0]!;
+    expect(set.weight).toBe(225);
+    expect(set.reps).toBe(5);
+  });
+
+  it('delete removes a specific set by index', () => {
+    const now = new Date();
+    const date = now.toISOString().split('T')[0]!;
+
+    storage.saveCurrentWorkout({
+      id: `${date}-test`,
+      date,
+      template: null,
+      startTime: now.toISOString(),
+      endTime: null,
+      exercises: [
+        {
+          exercise: 'bench-press',
+          sets: [
+            { weight: 135, reps: 10, rir: null },
+            { weight: 145, reps: 8, rir: null },
+            { weight: 155, reps: 6, rir: null },
+          ],
+        },
+      ],
+      notes: [],
+    });
+
+    const current = storage.getCurrentWorkout()!;
+    const benchLog = current.exercises.find((e) => e.exercise === 'bench-press')!;
+    benchLog.sets.splice(1, 1);
+    storage.saveCurrentWorkout(current);
+
+    const updated = storage.getCurrentWorkout()!;
+    const sets = updated.exercises.find((e) => e.exercise === 'bench-press')!.sets;
+    expect(sets).toHaveLength(2);
+    expect(sets[0]!.weight).toBe(135);
+    expect(sets[1]!.weight).toBe(155);
+  });
 });
 
 describe('exercise management', () => {
