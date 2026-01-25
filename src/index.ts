@@ -18,28 +18,35 @@ import {
   createVolumeCommand,
   createProgressionCommand,
 } from './commands/analytics.js';
+import { createProfileCommand } from './commands/profile.js';
 
 const program = new Command();
 
 program
   .name('workout')
   .description('CLI for tracking workouts, managing exercises, and querying training history')
-  .version('0.2.0');
+  .version('0.3.0')
+  .option('-p, --profile <name>', 'User profile to use');
 
-program.addCommand(createExercisesCommand());
-program.addCommand(createTemplatesCommand());
-program.addCommand(createStartCommand());
-program.addCommand(createLogCommand());
-program.addCommand(createStatusCommand());
-program.addCommand(createDoneCommand());
-program.addCommand(createCancelCommand());
-program.addCommand(createNoteCommand());
-program.addCommand(createSwapCommand());
-program.addCommand(createAddCommand());
-program.addCommand(createLastCommand());
-program.addCommand(createHistoryCommand());
-program.addCommand(createPRCommand());
-program.addCommand(createVolumeCommand());
-program.addCommand(createProgressionCommand());
+function getProfile(): string | undefined {
+  return program.opts()['profile'] as string | undefined;
+}
+
+program.addCommand(createProfileCommand());
+program.addCommand(createExercisesCommand(getProfile));
+program.addCommand(createTemplatesCommand(getProfile));
+program.addCommand(createStartCommand(getProfile));
+program.addCommand(createLogCommand(getProfile));
+program.addCommand(createStatusCommand(getProfile));
+program.addCommand(createDoneCommand(getProfile));
+program.addCommand(createCancelCommand(getProfile));
+program.addCommand(createNoteCommand(getProfile));
+program.addCommand(createSwapCommand(getProfile));
+program.addCommand(createAddCommand(getProfile));
+program.addCommand(createLastCommand(getProfile));
+program.addCommand(createHistoryCommand(getProfile));
+program.addCommand(createPRCommand(getProfile));
+program.addCommand(createVolumeCommand(getProfile));
+program.addCommand(createProgressionCommand(getProfile));
 
 program.parse();

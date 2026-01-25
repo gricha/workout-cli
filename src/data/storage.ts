@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
 import {
   Config,
   Exercise,
@@ -12,49 +11,53 @@ import {
   type Workout as WorkoutType,
 } from '../types.js';
 import { defaultExercises } from '../exercises.js';
-
-function expandPath(p: string): string {
-  if (p.startsWith('~/')) {
-    return path.join(os.homedir(), p.slice(2));
-  }
-  return p;
-}
+import { getBaseDir, getProfilesDir, resolveProfile } from './profiles.js';
 
 export class Storage {
-  private dataDir: string;
+  private baseDir: string;
+  private profileDir: string | null;
 
-  constructor(dataDir?: string) {
-    this.dataDir = expandPath(dataDir ?? '~/.workout');
+  constructor(profile?: string) {
+    this.baseDir = getBaseDir();
+    this.profileDir = profile ? path.join(getProfilesDir(), profile) : null;
   }
 
   private ensureDir(): void {
-    if (!fs.existsSync(this.dataDir)) {
-      fs.mkdirSync(this.dataDir, { recursive: true });
+    fs.mkdirSync(this.baseDir, { recursive: true });
+    if (this.profileDir) {
+      fs.mkdirSync(path.join(this.profileDir, 'workouts'), { recursive: true });
     }
-    const workoutsDir = path.join(this.dataDir, 'workouts');
-    if (!fs.existsSync(workoutsDir)) {
-      fs.mkdirSync(workoutsDir, { recursive: true });
+  }
+
+  private requireProfileDir(): string {
+    if (!this.profileDir) {
+      throw new Error('Profile required for this operation');
     }
+    return this.profileDir;
   }
 
   private configPath(): string {
-    return path.join(this.dataDir, 'config.json');
+    return path.join(this.requireProfileDir(), 'config.json');
   }
 
   private exercisesPath(): string {
-    return path.join(this.dataDir, 'exercises.json');
+    return path.join(this.baseDir, 'exercises.json');
   }
 
   private templatesPath(): string {
-    return path.join(this.dataDir, 'templates.json');
+    return path.join(this.requireProfileDir(), 'templates.json');
   }
 
   private currentPath(): string {
-    return path.join(this.dataDir, 'current.json');
+    return path.join(this.requireProfileDir(), 'current.json');
   }
 
   private workoutPath(date: string): string {
-    return path.join(this.dataDir, 'workouts', `${date}.json`);
+    return path.join(this.requireProfileDir(), 'workouts', `${date}.json`);
+  }
+
+  private workoutsDir(): string {
+    return path.join(this.requireProfileDir(), 'workouts');
   }
 
   getConfig(): ConfigType {
@@ -111,11 +114,7 @@ export class Storage {
     if (index === -1) {
       throw new Error(`Exercise "${id}" not found`);
     }
-    const current = exercises[index];
-    if (!current) {
-      throw new Error(`Exercise "${id}" not found`);
-    }
-    exercises[index] = { ...current, ...updates };
+    exercises[index] = { ...exercises[index]!, ...updates };
     this.saveExercises(exercises);
   }
 
@@ -210,7 +209,7 @@ export class Storage {
 
   getAllWorkouts(): WorkoutType[] {
     this.ensureDir();
-    const workoutsDir = path.join(this.dataDir, 'workouts');
+    const workoutsDir = this.workoutsDir();
     if (!fs.existsSync(workoutsDir)) {
       return [];
     }
@@ -244,14 +243,22 @@ export class Storage {
 }
 
 let storageInstance: Storage | null = null;
+let currentProfile: string | null = null;
 
-export function getStorage(dataDir?: string): Storage {
-  if (!storageInstance || dataDir) {
-    storageInstance = new Storage(dataDir);
+export function getStorage(profile?: string): Storage {
+  const resolvedProfile = profile ?? resolveProfile();
+  if (!storageInstance || currentProfile !== resolvedProfile) {
+    storageInstance = new Storage(resolvedProfile);
+    currentProfile = resolvedProfile;
   }
   return storageInstance;
 }
 
+export function getSharedStorage(): Storage {
+  return new Storage();
+}
+
 export function resetStorage(): void {
   storageInstance = null;
+  currentProfile = null;
 }

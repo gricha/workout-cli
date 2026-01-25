@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { getStorage } from '../data/storage.js';
+import { getSharedStorage } from '../data/storage.js';
 import {
   Exercise,
   slugify,
@@ -8,7 +8,7 @@ import {
   type Equipment,
 } from '../types.js';
 
-export function createExercisesCommand(): Command {
+export function createExercisesCommand(_getProfile: () => string | undefined): Command {
   const exercises = new Command('exercises').description('Manage exercise library');
 
   exercises
@@ -18,7 +18,7 @@ export function createExercisesCommand(): Command {
     .option('-t, --type <type>', 'Filter by exercise type (compound/isolation)')
     .option('--json', 'Output as JSON')
     .action((options: { muscle?: string; type?: string; json?: boolean }) => {
-      const storage = getStorage();
+      const storage = getSharedStorage();
       let exerciseList = storage.getExercises();
 
       if (options.muscle) {
@@ -51,7 +51,7 @@ export function createExercisesCommand(): Command {
     .description('Show exercise details')
     .option('--json', 'Output as JSON')
     .action((id: string, options: { json?: boolean }) => {
-      const storage = getStorage();
+      const storage = getSharedStorage();
       const exercise = storage.getExercise(id);
 
       if (!exercise) {
@@ -98,7 +98,7 @@ export function createExercisesCommand(): Command {
           notes?: string;
         }
       ) => {
-        const storage = getStorage();
+        const storage = getSharedStorage();
         const id = options.id ?? slugify(name);
         const muscles = options.muscles.split(',').map((m) => m.trim()) as MuscleGroup[];
         const aliases = options.aliases ? options.aliases.split(',').map((a) => a.trim()) : [];
@@ -146,7 +146,7 @@ export function createExercisesCommand(): Command {
           notes?: string;
         }
       ) => {
-        const storage = getStorage();
+        const storage = getSharedStorage();
         const exercise = storage.getExercise(id);
 
         if (!exercise) {
@@ -192,7 +192,7 @@ export function createExercisesCommand(): Command {
     .command('delete <id>')
     .description('Delete an exercise')
     .action((id: string) => {
-      const storage = getStorage();
+      const storage = getSharedStorage();
 
       try {
         storage.deleteExercise(id);
