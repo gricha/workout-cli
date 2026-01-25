@@ -28,7 +28,7 @@ const program = new Command();
 program
   .name('workout')
   .description('CLI for tracking workouts, managing exercises, and querying training history')
-  .version('0.4.0')
+  .version('0.4.1')
   .option('-p, --profile <name>', 'User profile to use');
 
 function getProfile(): string | undefined {
