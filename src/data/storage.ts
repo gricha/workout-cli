@@ -23,25 +23,21 @@ export class Storage {
   }
 
   private ensureDir(): void {
-    if (!fs.existsSync(this.baseDir)) {
-      fs.mkdirSync(this.baseDir, { recursive: true });
-    }
+    fs.mkdirSync(this.baseDir, { recursive: true });
     if (this.profileDir) {
-      if (!fs.existsSync(this.profileDir)) {
-        fs.mkdirSync(this.profileDir, { recursive: true });
-      }
-      const workoutsDir = path.join(this.profileDir, 'workouts');
-      if (!fs.existsSync(workoutsDir)) {
-        fs.mkdirSync(workoutsDir, { recursive: true });
-      }
+      fs.mkdirSync(path.join(this.profileDir, 'workouts'), { recursive: true });
     }
   }
 
-  private configPath(): string {
+  private requireProfileDir(): string {
     if (!this.profileDir) {
-      throw new Error('Profile required for config access');
+      throw new Error('Profile required for this operation');
     }
-    return path.join(this.profileDir, 'config.json');
+    return this.profileDir;
+  }
+
+  private configPath(): string {
+    return path.join(this.requireProfileDir(), 'config.json');
   }
 
   private exercisesPath(): string {
@@ -49,31 +45,19 @@ export class Storage {
   }
 
   private templatesPath(): string {
-    if (!this.profileDir) {
-      throw new Error('Profile required for templates access');
-    }
-    return path.join(this.profileDir, 'templates.json');
+    return path.join(this.requireProfileDir(), 'templates.json');
   }
 
   private currentPath(): string {
-    if (!this.profileDir) {
-      throw new Error('Profile required for current workout access');
-    }
-    return path.join(this.profileDir, 'current.json');
+    return path.join(this.requireProfileDir(), 'current.json');
   }
 
   private workoutPath(date: string): string {
-    if (!this.profileDir) {
-      throw new Error('Profile required for workout access');
-    }
-    return path.join(this.profileDir, 'workouts', `${date}.json`);
+    return path.join(this.requireProfileDir(), 'workouts', `${date}.json`);
   }
 
   private workoutsDir(): string {
-    if (!this.profileDir) {
-      throw new Error('Profile required for workouts access');
-    }
-    return path.join(this.profileDir, 'workouts');
+    return path.join(this.requireProfileDir(), 'workouts');
   }
 
   getConfig(): ConfigType {
@@ -130,11 +114,7 @@ export class Storage {
     if (index === -1) {
       throw new Error(`Exercise "${id}" not found`);
     }
-    const current = exercises[index];
-    if (!current) {
-      throw new Error(`Exercise "${id}" not found`);
-    }
-    exercises[index] = { ...current, ...updates };
+    exercises[index] = { ...exercises[index]!, ...updates };
     this.saveExercises(exercises);
   }
 

@@ -57,15 +57,11 @@ export function hasLegacyData(): boolean {
   const legacyFiles = ['config.json', 'templates.json', 'current.json'];
   const legacyWorkouts = path.join(baseDir, 'workouts');
 
-  for (const file of legacyFiles) {
-    if (fs.existsSync(path.join(baseDir, file))) {
-      return true;
-    }
-  }
-  if (fs.existsSync(legacyWorkouts) && fs.statSync(legacyWorkouts).isDirectory()) {
-    return true;
-  }
-  return false;
+  const hasLegacyFile = legacyFiles.some((file) => fs.existsSync(path.join(baseDir, file)));
+  const hasLegacyWorkouts =
+    fs.existsSync(legacyWorkouts) && fs.statSync(legacyWorkouts).isDirectory();
+
+  return hasLegacyFile || hasLegacyWorkouts;
 }
 
 export function migrateLegacyData(): void {

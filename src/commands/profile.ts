@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { getProfiles, createProfile, deleteProfile, profileExists } from '../data/profiles.js';
+import { getProfiles, createProfile, deleteProfile } from '../data/profiles.js';
 
 export function createProfileCommand(): Command {
   const profile = new Command('profile').description('Manage user profiles');
@@ -38,11 +38,6 @@ export function createProfileCommand(): Command {
     .command('delete <name>')
     .description('Delete a profile')
     .action((name: string) => {
-      if (!profileExists(name)) {
-        console.error(`Profile "${name}" does not exist.`);
-        process.exit(1);
-      }
-
       try {
         deleteProfile(name);
         console.log(`Deleted profile: ${name}`);
