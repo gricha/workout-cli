@@ -377,3 +377,177 @@ export function createAddCommand(getProfile: () => string | undefined): Command 
       console.log(`Added ${exercise.name} to workout`);
     });
 }
+
+export function createUndoCommand(getProfile: () => string | undefined): Command {
+  return new Command('undo')
+    .description('Remove the last logged set')
+    .argument('[exercise]', 'Exercise ID (defaults to last exercise with sets)')
+    .action((exerciseId: string | undefined) => {
+      const storage = getStorage(getProfile());
+      const workout = storage.getCurrentWorkout();
+
+      if (!workout) {
+        console.error('No active workout. Start one with "workout start".');
+        process.exit(1);
+      }
+
+      const config = storage.getConfig();
+      const unit = config.units;
+
+      let exerciseLog: ExerciseLog | undefined;
+      let exerciseName: string;
+
+      if (exerciseId) {
+        const exercise = storage.getExercise(exerciseId);
+        if (!exercise) {
+          console.error(`Exercise "${exerciseId}" not found.`);
+          process.exit(1);
+        }
+        exerciseLog = workout.exercises.find((e) => e.exercise === exercise.id);
+        exerciseName = exercise.name;
+        if (!exerciseLog) {
+          console.error(`Exercise "${exercise.name}" is not in the current workout.`);
+          process.exit(1);
+        }
+      } else {
+        for (let i = workout.exercises.length - 1; i >= 0; i--) {
+          const log = workout.exercises[i]!;
+          if (log.sets.length > 0) {
+            exerciseLog = log;
+            break;
+          }
+        }
+        if (!exerciseLog) {
+          console.error('No sets to undo.');
+          process.exit(1);
+        }
+        const exercise = storage.getExercise(exerciseLog.exercise);
+        exerciseName = exercise?.name ?? exerciseLog.exercise;
+      }
+
+      if (exerciseLog.sets.length === 0) {
+        console.error(`No sets to undo for ${exerciseName}.`);
+        process.exit(1);
+      }
+
+      const removedSet = exerciseLog.sets.pop()!;
+      storage.saveCurrentWorkout(workout);
+      console.log(
+        `Removed set: ${removedSet.weight}${unit} x ${removedSet.reps} from ${exerciseName}`
+      );
+    });
+}
+
+export function createEditCommand(getProfile: () => string | undefined): Command {
+  return new Command('edit')
+    .description('Edit a specific set')
+    .argument('<exercise>', 'Exercise ID')
+    .argument('<set>', 'Set number (1-indexed)')
+    .argument('[weight]', 'New weight')
+    .argument('[reps]', 'New reps')
+    .option('--reps <reps>', 'New reps (alternative to positional)')
+    .option('--rir <rir>', 'New RIR value')
+    .action(
+      (
+        exerciseId: string,
+        setNum: string,
+        weightStr: string | undefined,
+        repsStr: string | undefined,
+        options: { reps?: string; rir?: string }
+      ) => {
+        const storage = getStorage(getProfile());
+        const workout = storage.getCurrentWorkout();
+
+        if (!workout) {
+          console.error('No active workout. Start one with "workout start".');
+          process.exit(1);
+        }
+
+        const exercise = storage.getExercise(exerciseId);
+        if (!exercise) {
+          console.error(`Exercise "${exerciseId}" not found.`);
+          process.exit(1);
+        }
+
+        const exerciseLog = workout.exercises.find((e) => e.exercise === exercise.id);
+        if (!exerciseLog) {
+          console.error(`Exercise "${exercise.name}" is not in the current workout.`);
+          process.exit(1);
+        }
+
+        const setIndex = parseInt(setNum, 10) - 1;
+        if (isNaN(setIndex) || setIndex < 0 || setIndex >= exerciseLog.sets.length) {
+          console.error(
+            `Invalid set number. ${exercise.name} has ${exerciseLog.sets.length} set(s).`
+          );
+          process.exit(1);
+        }
+
+        const set = exerciseLog.sets[setIndex]!;
+        const config = storage.getConfig();
+        const unit = config.units;
+        const before = `${set.weight}${unit}x${set.reps}`;
+
+        if (weightStr !== undefined) {
+          set.weight = parseFloat(weightStr);
+        }
+
+        const repsValue = repsStr ?? options.reps;
+        if (repsValue !== undefined) {
+          set.reps = parseInt(repsValue, 10);
+        }
+
+        if (options.rir !== undefined) {
+          set.rir = parseInt(options.rir, 10);
+        }
+
+        storage.saveCurrentWorkout(workout);
+        const after = `${set.weight}${unit}x${set.reps}`;
+        console.log(`Updated set ${setNum}: ${before} → ${after}`);
+      }
+    );
+}
+
+export function createDeleteCommand(getProfile: () => string | undefined): Command {
+  return new Command('delete')
+    .description('Delete a specific set')
+    .argument('<exercise>', 'Exercise ID')
+    .argument('<set>', 'Set number (1-indexed)')
+    .action((exerciseId: string, setNum: string) => {
+      const storage = getStorage(getProfile());
+      const workout = storage.getCurrentWorkout();
+
+      if (!workout) {
+        console.error('No active workout. Start one with "workout start".');
+        process.exit(1);
+      }
+
+      const exercise = storage.getExercise(exerciseId);
+      if (!exercise) {
+        console.error(`Exercise "${exerciseId}" not found.`);
+        process.exit(1);
+      }
+
+      const exerciseLog = workout.exercises.find((e) => e.exercise === exercise.id);
+      if (!exerciseLog) {
+        console.error(`Exercise "${exercise.name}" is not in the current workout.`);
+        process.exit(1);
+      }
+
+      const setIndex = parseInt(setNum, 10) - 1;
+      if (isNaN(setIndex) || setIndex < 0 || setIndex >= exerciseLog.sets.length) {
+        console.error(
+          `Invalid set number. ${exercise.name} has ${exerciseLog.sets.length} set(s).`
+        );
+        process.exit(1);
+      }
+
+      const config = storage.getConfig();
+      const unit = config.units;
+      const [removedSet] = exerciseLog.sets.splice(setIndex, 1);
+      storage.saveCurrentWorkout(workout);
+      console.log(
+        `Deleted set ${setNum}: ${removedSet!.weight}${unit} x ${removedSet!.reps} from ${exercise.name}`
+      );
+    });
+}

@@ -11,6 +11,9 @@ import {
   createNoteCommand,
   createSwapCommand,
   createAddCommand,
+  createUndoCommand,
+  createEditCommand,
+  createDeleteCommand,
 } from './commands/session.js';
 import { createLastCommand, createHistoryCommand } from './commands/history.js';
 import {
@@ -43,6 +46,9 @@ program.addCommand(createCancelCommand(getProfile));
 program.addCommand(createNoteCommand(getProfile));
 program.addCommand(createSwapCommand(getProfile));
 program.addCommand(createAddCommand(getProfile));
+program.addCommand(createUndoCommand(getProfile));
+program.addCommand(createEditCommand(getProfile));
+program.addCommand(createDeleteCommand(getProfile));
 program.addCommand(createLastCommand(getProfile));
 program.addCommand(createHistoryCommand(getProfile));
 program.addCommand(createPRCommand(getProfile));
