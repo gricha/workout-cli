@@ -1,6 +1,11 @@
 import { Command } from 'commander';
 import { getStorage } from '../data/storage.js';
-import { Template, slugify, type TemplateExercise } from '../types.js';
+import {
+  Template,
+  slugify,
+  type Template as TemplateType,
+  type TemplateExercise,
+} from '../types.js';
 
 function parseExerciseSpec(spec: string): TemplateExercise {
   const match = spec.match(/^([^:]+):(\d+)x(.+)$/);
@@ -117,6 +122,73 @@ export function createTemplatesCommand(getProfile: () => string | undefined): Co
         try {
           storage.addTemplate(template);
           console.log(`Created template: ${template.name} (${template.id})`);
+        } catch (err) {
+          console.error((err as Error).message);
+          process.exit(1);
+        }
+      }
+    );
+
+  templates
+    .command('edit <id>')
+    .description('Edit an existing template')
+    .option('-n, --name <name>', 'New template name')
+    .option(
+      '-e, --exercises <exercises>',
+      'Replace exercise specs (e.g., "bench-press:3x8-12, squat:4x5")'
+    )
+    .option('-d, --description <description>', 'New template description')
+    .action(
+      (
+        id: string,
+        options: {
+          name?: string;
+          exercises?: string;
+          description?: string;
+        }
+      ) => {
+        const storage = getStorage(getProfile());
+        const existing = storage.getTemplate(id);
+
+        if (!existing) {
+          console.error(`Template "${id}" not found.`);
+          process.exit(1);
+        }
+
+        const updates: Partial<TemplateType> = {};
+
+        if (options.name) {
+          updates.name = options.name;
+        }
+
+        if (options.description) {
+          updates.description = options.description;
+        }
+
+        if (options.exercises) {
+          const exerciseSpecs = options.exercises.split(',').map((s) => s.trim());
+          const exercises: TemplateExercise[] = [];
+
+          for (const spec of exerciseSpecs) {
+            try {
+              exercises.push(parseExerciseSpec(spec));
+            } catch (err) {
+              console.error((err as Error).message);
+              process.exit(1);
+            }
+          }
+
+          updates.exercises = exercises;
+        }
+
+        if (Object.keys(updates).length === 0) {
+          console.error('No changes specified. Use --name, --exercises, or --description.');
+          process.exit(1);
+        }
+
+        try {
+          storage.updateTemplate(id, updates);
+          console.log(`Updated template: ${id}`);
         } catch (err) {
           console.error((err as Error).message);
           process.exit(1);

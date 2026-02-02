@@ -159,6 +159,16 @@ export class Storage {
     this.saveTemplates(templates);
   }
 
+  updateTemplate(id: string, updates: Partial<TemplateType>): void {
+    const templates = this.getTemplates();
+    const index = templates.findIndex((t) => t.id === id);
+    if (index === -1) {
+      throw new Error(`Template "${id}" not found`);
+    }
+    templates[index] = { ...templates[index]!, ...updates };
+    this.saveTemplates(templates);
+  }
+
   deleteTemplate(id: string): void {
     const templates = this.getTemplates();
     const index = templates.findIndex((t) => t.id === id);
