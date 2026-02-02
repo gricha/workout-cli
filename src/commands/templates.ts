@@ -23,6 +23,10 @@ function parseExerciseSpec(spec: string): TemplateExercise {
   };
 }
 
+function parseExerciseSpecs(input: string): TemplateExercise[] {
+  return input.split(',').map((s) => parseExerciseSpec(s.trim()));
+}
+
 export function createTemplatesCommand(getProfile: () => string | undefined): Command {
   const templates = new Command('templates').description('Manage workout templates');
 
@@ -100,16 +104,12 @@ export function createTemplatesCommand(getProfile: () => string | undefined): Co
         const storage = getStorage(getProfile());
         const id = options.id ?? slugify(name);
 
-        const exerciseSpecs = options.exercises.split(',').map((s) => s.trim());
-        const exercises: TemplateExercise[] = [];
-
-        for (const spec of exerciseSpecs) {
-          try {
-            exercises.push(parseExerciseSpec(spec));
-          } catch (err) {
-            console.error((err as Error).message);
-            process.exit(1);
-          }
+        let exercises: TemplateExercise[];
+        try {
+          exercises = parseExerciseSpecs(options.exercises);
+        } catch (err) {
+          console.error((err as Error).message);
+          process.exit(1);
         }
 
         const template = Template.parse({
@@ -166,19 +166,12 @@ export function createTemplatesCommand(getProfile: () => string | undefined): Co
         }
 
         if (options.exercises) {
-          const exerciseSpecs = options.exercises.split(',').map((s) => s.trim());
-          const exercises: TemplateExercise[] = [];
-
-          for (const spec of exerciseSpecs) {
-            try {
-              exercises.push(parseExerciseSpec(spec));
-            } catch (err) {
-              console.error((err as Error).message);
-              process.exit(1);
-            }
+          try {
+            updates.exercises = parseExerciseSpecs(options.exercises);
+          } catch (err) {
+            console.error((err as Error).message);
+            process.exit(1);
           }
-
-          updates.exercises = exercises;
         }
 
         if (Object.keys(updates).length === 0) {

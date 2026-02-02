@@ -165,7 +165,7 @@ export class Storage {
     if (index === -1) {
       throw new Error(`Template "${id}" not found`);
     }
-    templates[index] = { ...templates[index]!, ...updates };
+    templates[index] = Template.parse({ ...templates[index]!, ...updates });
     this.saveTemplates(templates);
   }
 

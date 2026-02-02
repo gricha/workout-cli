@@ -1,23 +1,30 @@
 ---
-description: Run full validation (lint, format, typecheck, tests, build). Use before committing or after changes.
+description: Run full validation (lint, format, typecheck, tests, build) and warden code review. Use before committing or after changes.
 ---
 
 # Validate
 
-Run the full validation suite to ensure code quality.
+Run the full validation suite and code review to ensure code quality.
 
-## Command
+## Steps
 
-```bash
-bun run validate
-```
+1. Run the validation suite:
+   ```bash
+   bun run validate
+   ```
+   This runs:
+   - `oxlint` - Linting with type-aware rules
+   - `oxfmt --check` - Format verification
+   - `tsc --noEmit` - Type checking
+   - `vitest run` - Unit tests
+   - `tsc` - Build
 
-This runs:
-1. `oxlint` - Linting with type-aware rules
-2. `oxfmt --check` - Format verification
-3. `tsc --noEmit` - Type checking
-4. `vitest run` - Unit tests
-5. `tsc` - Build
+2. If validation passes, run warden for code review feedback:
+   ```bash
+   warden -v
+   ```
+   The `-v` flag streams findings in real-time (code simplification, bug detection).
+   Fix any issues warden finds before proceeding.
 
 ## When to Use
 
@@ -27,4 +34,4 @@ This runs:
 
 ## Expected Output
 
-All checks should pass with no errors. If any step fails, fix the issues before proceeding.
+All checks should pass with no errors. Warden findings should be addressed before proceeding.
