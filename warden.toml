@@ -1,0 +1,24 @@
+version = 1
+
+[defaults.filters]
+ignorePaths = ["**/*.md", "**/*.lock", "**/*.json"]
+
+[[triggers]]
+name = "code-simplifier"
+event = "pull_request"
+actions = ["opened", "synchronize", "reopened"]
+skill = "code-simplifier"
+remote = "getsentry/skills"
+
+[triggers.filters]
+paths = ["src/**", "test/**"]
+
+[[triggers]]
+name = "find-bugs"
+event = "pull_request"
+actions = ["opened", "synchronize", "reopened"]
+skill = "find-bugs"
+remote = "getsentry/warden"
+
+[triggers.filters]
+paths = ["src/**"]
