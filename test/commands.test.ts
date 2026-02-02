@@ -507,6 +507,47 @@ describe('template management', () => {
     expect(templates.map((t) => t.id).sort()).toEqual(['legs', 'pull', 'push']);
   });
 
+  it('updates template name and description', () => {
+    storage.addTemplate({
+      id: 'push-a',
+      name: 'Push A',
+      exercises: [{ exercise: 'bench-press', sets: 3, reps: '8-12' }],
+    });
+
+    storage.updateTemplate('push-a', { name: 'Push Day A', description: 'Updated push workout' });
+
+    const updated = storage.getTemplate('push-a')!;
+    expect(updated.name).toBe('Push Day A');
+    expect(updated.description).toBe('Updated push workout');
+    expect(updated.exercises).toHaveLength(1);
+  });
+
+  it('updates template exercises', () => {
+    storage.addTemplate({
+      id: 'pull-b',
+      name: 'Pull B',
+      exercises: [{ exercise: 'deadlift', sets: 3, reps: '5' }],
+    });
+
+    storage.updateTemplate('pull-b', {
+      exercises: [
+        { exercise: 'barbell-row', sets: 4, reps: '8-12' },
+        { exercise: 'lat-pulldown', sets: 3, reps: '10-15' },
+      ],
+    });
+
+    const updated = storage.getTemplate('pull-b')!;
+    expect(updated.name).toBe('Pull B');
+    expect(updated.exercises).toHaveLength(2);
+    expect(updated.exercises[0]?.exercise).toBe('barbell-row');
+  });
+
+  it('throws when updating non-existent template', () => {
+    expect(() => storage.updateTemplate('nonexistent', { name: 'Nope' })).toThrow(
+      'Template "nonexistent" not found'
+    );
+  });
+
   it('deletes template', () => {
     storage.addTemplate({ id: 'to-delete', name: 'Delete Me', exercises: [] });
     expect(storage.getTemplate('to-delete')).toBeDefined();
