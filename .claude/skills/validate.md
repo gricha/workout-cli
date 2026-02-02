@@ -21,7 +21,7 @@ Run the full validation suite and code review to ensure code quality.
 
 2. If validation passes, run warden for code review feedback:
    ```bash
-   warden -v
+   npx @sentry/warden -v
    ```
    The `-v` flag streams findings in real-time (code simplification, bug detection).
    Fix any issues warden finds before proceeding.

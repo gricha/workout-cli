@@ -17,15 +17,16 @@ function calculateStats(workout: Workout, storage: ReturnType<typeof getStorage>
   const musclesSet = new Set<string>();
 
   for (const exerciseLog of workout.exercises) {
-    totalSets += exerciseLog.sets.length;
-    for (const set of exerciseLog.sets) {
-      totalVolume += set.weight * set.reps;
-    }
     const exercise = storage.getExercise(exerciseLog.exercise);
-    if (exercise) {
-      for (const muscle of exercise.muscles) {
-        musclesSet.add(muscle);
-      }
+    if (!exercise) continue;
+
+    totalSets += exerciseLog.sets.length;
+    const multiplier = exercise.weightInput === 'per-side' ? 2 : 1;
+    for (const set of exerciseLog.sets) {
+      totalVolume += set.weight * set.reps * multiplier;
+    }
+    for (const muscle of exercise.muscles) {
+      musclesSet.add(muscle);
     }
   }
 

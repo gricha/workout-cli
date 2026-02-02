@@ -323,3 +323,88 @@ describe('Progression tracking', () => {
     expect(parsed.progression).toHaveLength(1);
   });
 });
+
+describe('Per-side weight input', () => {
+  let testHome: string;
+  let storage: Storage;
+
+  beforeEach(() => {
+    testHome = fs.mkdtempSync(path.join(os.tmpdir(), 'workout-test-'));
+    process.env.HOME = testHome;
+    resetStorage();
+    createProfile('default');
+    storage = getStorage('default');
+  });
+
+  afterEach(() => {
+    process.env.HOME = originalHome;
+    fs.rmSync(testHome, { recursive: true, force: true });
+  });
+
+  it('doubles volume for per-side exercises', () => {
+    const today = new Date().toISOString().split('T')[0]!;
+    storage.finishWorkout({
+      id: `${today}-arms`,
+      date: today,
+      template: null,
+      startTime: `${today}T10:00:00Z`,
+      endTime: `${today}T11:00:00Z`,
+      exercises: [{ exercise: 'bicep-curl', sets: [{ weight: 25, reps: 10, rir: null }] }],
+      notes: [],
+    });
+
+    const { stdout } = cli('volume --week --json', testHome);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.totalVolume).toBe(500);
+  });
+
+  it('does not double volume for barbell exercises', () => {
+    const today = new Date().toISOString().split('T')[0]!;
+    storage.finishWorkout({
+      id: `${today}-push`,
+      date: today,
+      template: null,
+      startTime: `${today}T10:00:00Z`,
+      endTime: `${today}T11:00:00Z`,
+      exercises: [{ exercise: 'bench-press', sets: [{ weight: 135, reps: 10, rir: null }] }],
+      notes: [],
+    });
+
+    const { stdout } = cli('volume --week --json', testHome);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.totalVolume).toBe(1350);
+  });
+
+  it('PRs use input weight not doubled', () => {
+    storage.finishWorkout({
+      id: '2026-01-20-arms',
+      date: '2026-01-20',
+      template: null,
+      startTime: '2026-01-20T10:00:00Z',
+      endTime: '2026-01-20T11:00:00Z',
+      exercises: [{ exercise: 'bicep-curl', sets: [{ weight: 30, reps: 10, rir: null }] }],
+      notes: [],
+    });
+
+    const { stdout } = cli('pr bicep-curl --json', testHome);
+    const parsed = JSON.parse(stdout);
+    expect(parsed[0].weight).toBe(30);
+    expect(parsed[0].e1rm).toBe(Math.round(30 * (1 + 10 / 30)));
+  });
+
+  it('progression volume is doubled for per-side exercises', () => {
+    storage.finishWorkout({
+      id: '2026-01-20-arms',
+      date: '2026-01-20',
+      template: null,
+      startTime: '2026-01-20T10:00:00Z',
+      endTime: '2026-01-20T11:00:00Z',
+      exercises: [{ exercise: 'bicep-curl', sets: [{ weight: 25, reps: 10, rir: null }] }],
+      notes: [],
+    });
+
+    const { stdout } = cli('progression bicep-curl --json', testHome);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.progression[0].totalVolume).toBe(500);
+  });
+});
