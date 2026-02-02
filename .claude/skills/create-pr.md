@@ -20,12 +20,14 @@ Create a pull request for the current branch.
    bun run validate
    ```
 
-2. Push branch if needed:
+2. Ensure warden has been run and findings addressed (see validate skill). Do not re-run if already done.
+
+3. Push branch if needed:
    ```bash
    git push -u origin HEAD
    ```
 
-3. Create PR with gh CLI:
+4. Create PR with gh CLI:
    ```bash
    gh pr create --title "Brief title" --body "## Summary
    - Change 1

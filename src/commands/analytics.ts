@@ -189,9 +189,10 @@ export function createVolumeCommand(getProfile: () => string | undefined): Comma
 
             let exerciseSets = 0;
             let exerciseVol = 0;
+            const multiplier = exercise.weightInput === 'per-side' ? 2 : 1;
 
             for (const set of log.sets) {
-              const vol = set.weight * set.reps;
+              const vol = set.weight * set.reps * multiplier;
               totalSets++;
               totalVolume += vol;
               exerciseSets++;
@@ -294,6 +295,7 @@ export function createProgressionCommand(getProfile: () => string | undefined): 
         return;
       }
 
+      const multiplier = exercise.weightInput === 'per-side' ? 2 : 1;
       const progressionData = limited.map(({ workout, log }) => {
         const bestSet = log.sets.reduce((best, set) => {
           const e1rm = calculateE1RM(set.weight, set.reps);
@@ -301,7 +303,7 @@ export function createProgressionCommand(getProfile: () => string | undefined): 
           return e1rm > bestE1rm ? set : best;
         }, log.sets[0]!);
 
-        const totalVolume = log.sets.reduce((sum, s) => sum + s.weight * s.reps, 0);
+        const totalVolume = log.sets.reduce((sum, s) => sum + s.weight * s.reps * multiplier, 0);
         const e1rm = calculateE1RM(bestSet.weight, bestSet.reps);
 
         return {

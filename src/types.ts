@@ -35,6 +35,9 @@ export const Equipment = z.enum([
 ]);
 export type Equipment = z.infer<typeof Equipment>;
 
+export const WeightInput = z.enum(['total', 'per-side']);
+export type WeightInput = z.infer<typeof WeightInput>;
+
 export const Exercise = z.object({
   id: z.string(),
   name: z.string(),
@@ -42,9 +45,11 @@ export const Exercise = z.object({
   muscles: z.array(MuscleGroup),
   type: ExerciseType,
   equipment: Equipment,
+  weightInput: WeightInput.default('total'),
   notes: z.string().optional(),
 });
 export type Exercise = z.infer<typeof Exercise>;
+export type ExerciseInput = z.input<typeof Exercise>;
 
 export const TemplateExercise = z.object({
   exercise: z.string(),

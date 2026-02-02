@@ -36,6 +36,31 @@ describe('defaultExercises', () => {
     expect(uniqueIds.size).toBe(ids.length);
   });
 
+  it('dumbbell exercises have per-side weightInput', () => {
+    const perSideIds = [
+      'dumbbell-bench-press',
+      'dumbbell-shoulder-press',
+      'lateral-raise',
+      'rear-delt-fly',
+      'bicep-curl',
+      'hammer-curl',
+    ];
+    for (const id of perSideIds) {
+      const exercise = defaultExercises.find((e) => e.id === id);
+      expect(exercise, `${id} should exist`).toBeDefined();
+      expect(exercise?.weightInput, `${id} should be per-side`).toBe('per-side');
+    }
+  });
+
+  it('non-dumbbell exercises omit weightInput (defaults to total via schema)', () => {
+    const totalIds = ['bench-press', 'squat', 'deadlift', 'barbell-curl', 'leg-press'];
+    for (const id of totalIds) {
+      const exercise = defaultExercises.find((e) => e.id === id);
+      expect(exercise, `${id} should exist`).toBeDefined();
+      expect(exercise?.weightInput, `${id} should not set weightInput`).toBeUndefined();
+    }
+  });
+
   it('exercises have useful aliases', () => {
     const benchPress = defaultExercises.find((e) => e.id === 'bench-press');
     expect(benchPress?.aliases).toContain('bench');

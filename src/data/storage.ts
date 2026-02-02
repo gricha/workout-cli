@@ -81,8 +81,9 @@ export class Storage {
     this.ensureDir();
     const exercisesPath = this.exercisesPath();
     if (!fs.existsSync(exercisesPath)) {
-      fs.writeFileSync(exercisesPath, JSON.stringify(defaultExercises, null, 2));
-      return defaultExercises;
+      const parsed = defaultExercises.map((e) => Exercise.parse(e));
+      fs.writeFileSync(exercisesPath, JSON.stringify(parsed, null, 2));
+      return parsed;
     }
     const raw = JSON.parse(fs.readFileSync(exercisesPath, 'utf-8'));
     return raw.map((e: unknown) => Exercise.parse(e));

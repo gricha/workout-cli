@@ -6,6 +6,7 @@ import {
   type MuscleGroup,
   type ExerciseType,
   type Equipment,
+  type WeightInput,
 } from '../types.js';
 
 export function createExercisesCommand(_getProfile: () => string | undefined): Command {
@@ -68,6 +69,7 @@ export function createExercisesCommand(_getProfile: () => string | undefined): C
       console.log(`ID: ${exercise.id}`);
       console.log(`Type: ${exercise.type}`);
       console.log(`Equipment: ${exercise.equipment}`);
+      console.log(`Weight input: ${exercise.weightInput}`);
       console.log(`Muscles: ${exercise.muscles.join(', ')}`);
       if (exercise.aliases.length > 0) {
         console.log(`Aliases: ${exercise.aliases.join(', ')}`);
@@ -85,6 +87,7 @@ export function createExercisesCommand(_getProfile: () => string | undefined): C
     .requiredOption('--equipment <equipment>', 'Equipment type')
     .option('--id <id>', 'Custom ID (defaults to slugified name)')
     .option('--aliases <aliases>', 'Comma-separated aliases')
+    .option('--weight-input <type>', 'Weight input type (total or per-side)', 'total')
     .option('--notes <notes>', 'Exercise notes')
     .action(
       (
@@ -95,6 +98,7 @@ export function createExercisesCommand(_getProfile: () => string | undefined): C
           equipment: string;
           id?: string;
           aliases?: string;
+          weightInput?: string;
           notes?: string;
         }
       ) => {
@@ -110,6 +114,7 @@ export function createExercisesCommand(_getProfile: () => string | undefined): C
           muscles,
           type: options.type as ExerciseType,
           equipment: options.equipment as Equipment,
+          weightInput: options.weightInput as WeightInput,
           notes: options.notes,
         });
 
@@ -132,6 +137,7 @@ export function createExercisesCommand(_getProfile: () => string | undefined): C
     .option('--equipment <equipment>', 'New equipment')
     .option('--add-alias <alias>', 'Add an alias')
     .option('--remove-alias <alias>', 'Remove an alias')
+    .option('--weight-input <type>', 'Weight input type (total or per-side)')
     .option('--notes <notes>', 'New notes')
     .action(
       (
@@ -141,6 +147,7 @@ export function createExercisesCommand(_getProfile: () => string | undefined): C
           muscles?: string;
           type?: string;
           equipment?: string;
+          weightInput?: string;
           addAlias?: string;
           removeAlias?: string;
           notes?: string;
@@ -167,6 +174,9 @@ export function createExercisesCommand(_getProfile: () => string | undefined): C
         }
         if (options.equipment) {
           updates.equipment = options.equipment as Equipment;
+        }
+        if (options.weightInput) {
+          updates.weightInput = options.weightInput as WeightInput;
         }
         if (options.notes) {
           updates.notes = options.notes;

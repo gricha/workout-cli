@@ -1,6 +1,6 @@
-import type { Exercise } from './types.js';
+import type { ExerciseInput } from './types.js';
 
-export const defaultExercises: Exercise[] = [
+export const defaultExercises: ExerciseInput[] = [
   {
     id: 'bench-press',
     name: 'Bench Press',
@@ -24,6 +24,7 @@ export const defaultExercises: Exercise[] = [
     muscles: ['chest', 'triceps', 'front-delts'],
     type: 'compound',
     equipment: 'dumbbell',
+    weightInput: 'per-side',
   },
   {
     id: 'overhead-press',
@@ -40,6 +41,7 @@ export const defaultExercises: Exercise[] = [
     muscles: ['shoulders', 'triceps', 'front-delts'],
     type: 'compound',
     equipment: 'dumbbell',
+    weightInput: 'per-side',
   },
   {
     id: 'squat',
@@ -120,6 +122,7 @@ export const defaultExercises: Exercise[] = [
     muscles: ['side-delts', 'shoulders'],
     type: 'isolation',
     equipment: 'dumbbell',
+    weightInput: 'per-side',
   },
   {
     id: 'rear-delt-fly',
@@ -128,6 +131,7 @@ export const defaultExercises: Exercise[] = [
     muscles: ['rear-delts', 'back'],
     type: 'isolation',
     equipment: 'dumbbell',
+    weightInput: 'per-side',
   },
   {
     id: 'bicep-curl',
@@ -136,6 +140,7 @@ export const defaultExercises: Exercise[] = [
     muscles: ['biceps'],
     type: 'isolation',
     equipment: 'dumbbell',
+    weightInput: 'per-side',
   },
   {
     id: 'barbell-curl',
@@ -152,6 +157,7 @@ export const defaultExercises: Exercise[] = [
     muscles: ['biceps', 'forearms'],
     type: 'isolation',
     equipment: 'dumbbell',
+    weightInput: 'per-side',
   },
   {
     id: 'tricep-pushdown',
